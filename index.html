@@ -807,8 +807,8 @@ scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
 
 /* ── Camera ── */
 const cam = new THREE.PerspectiveCamera(80, innerWidth / innerHeight, 0.1, 500);
-cam.position.set(0, -1, 2.5);
-cam.lookAt(0, 2.5, 0);
+cam.position.set(0, 2, 2);
+cam.lookAt(0, 1.5, 0);
 
 /* ── Lights ── */
 const hemi = new THREE.HemisphereLight(0x223355, 0x200505, 1.5);
@@ -832,18 +832,7 @@ const topRim = new THREE.PointLight(0x3010a0, 3, 28);
 topRim.position.set(0, 10, -8);
 scene.add(topRim);
 
-/* ── Water plane ── */
-const waterMat = new THREE.MeshStandardMaterial({
-  color: 0x010205,
-  metalness: 0.95,
-  roughness: 0.05,
-  transparent: true,
-  opacity: 0.75,
-});
-const water = new THREE.Mesh(new THREE.PlaneGeometry(60, 60), waterMat);
-water.rotation.x = -Math.PI / 2;
-water.position.y = -4.5;
-scene.add(water);
+/* water removida — causava glitch visível de baixo */
 
 /* ── Particles ── */
 const PCount = 400;
@@ -873,7 +862,17 @@ new GLTFLoader().load('./assets/island.glb',
     const s = 11 / Math.max(size.x, size.y, size.z);
     island.scale.setScalar(s);
     island.position.sub(center.multiplyScalar(s));
-    island.traverse(c => { if (c.isMesh) { c.castShadow = true; c.receiveShadow = true; } });
+    island.rotation.y = Math.PI * 0.25; // mostrar face diagonal pra câmera
+    island.traverse(c => {
+      if (c.isMesh) {
+        c.castShadow = true;
+        c.receiveShadow = true;
+        if (c.material) {
+          const mats = Array.isArray(c.material) ? c.material : [c.material];
+          mats.forEach(m => { m.side = THREE.DoubleSide; });
+        }
+      }
+    });
     scene.add(island);
     setTimeout(() => {
       loader.classList.add('out');
@@ -894,8 +893,8 @@ new GLTFLoader().load('./assets/island.glb',
 
 /* ── Camera scroll + mouse ── */
 /* ── Câmera: órbita horizontal fixa, nunca sobe/desce ── */
-const CAM_HEIGHT = -1;    // altura fixa — nunca muda (abaixo da ilha)
-const CAM_RADIUS = 2.5;   // raio da órbita ao redor da ilha
+const CAM_HEIGHT = 1.5;
+const CAM_RADIUS = 0.33;
 
 let orbitAngle = 0;        // ângulo atual em radianos
 let orbitTarget = 0;       // ângulo alvo (suavizado)
@@ -918,10 +917,7 @@ const clock = new THREE.Clock();
   requestAnimationFrame(animate);
   const t = clock.getElapsedTime();
 
-  if (island) {
-    island.rotation.y += 0.0006;
-    island.position.y = Math.sin(t * 0.4) * 0.06; // flutuação suave, pequena
-  }
+  // ilha parada — sem rotação, sem bob
 
   pts.rotation.y += 0.0002;
   redFill.intensity = 6 + Math.sin(t * 1.8) * 0.5;
@@ -933,7 +929,7 @@ const clock = new THREE.Clock();
   const cx = Math.sin(orbitAngle) * CAM_RADIUS;
   const cz = Math.cos(orbitAngle) * CAM_RADIUS;
   cam.position.set(cx, CAM_HEIGHT, cz);
-  cam.lookAt(0, 2.5, 0);
+  cam.lookAt(0, 0, 0);
 
   renderer.render(scene, cam);
 })();
