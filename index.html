@@ -806,9 +806,9 @@ pmrem.compileEquirectangularShader();
 scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
 
 /* ── Camera ── */
-const cam = new THREE.PerspectiveCamera(95, innerWidth / innerHeight, 0.001, 500);
-cam.position.set(0, -0.5, 0);
-cam.lookAt(0, 4, 0);
+const cam = new THREE.PerspectiveCamera(80, innerWidth / innerHeight, 0.1, 500);
+cam.position.set(0, -1, 2.5);
+cam.lookAt(0, 2.5, 0);
 
 /* ── Lights ── */
 const hemi = new THREE.HemisphereLight(0x223355, 0x200505, 1.5);
@@ -894,8 +894,8 @@ new GLTFLoader().load('./assets/island.glb',
 
 /* ── Camera scroll + mouse ── */
 /* ── Câmera: órbita horizontal fixa, nunca sobe/desce ── */
-const CAM_HEIGHT = -0.5;  // altura fixa — nunca muda
-const CAM_RADIUS = 0.5;   // raio da órbita dentro da ilha
+const CAM_HEIGHT = -1;    // altura fixa — nunca muda (abaixo da ilha)
+const CAM_RADIUS = 2.5;   // raio da órbita ao redor da ilha
 
 let orbitAngle = 0;        // ângulo atual em radianos
 let orbitTarget = 0;       // ângulo alvo (suavizado)
@@ -933,9 +933,7 @@ const clock = new THREE.Clock();
   const cx = Math.sin(orbitAngle) * CAM_RADIUS;
   const cz = Math.cos(orbitAngle) * CAM_RADIUS;
   cam.position.set(cx, CAM_HEIGHT, cz);
-
-  // sempre olha pras estruturas no topo da ilha — nunca muda
-  cam.lookAt(0, 4, 0);
+  cam.lookAt(0, 2.5, 0);
 
   renderer.render(scene, cam);
 })();
