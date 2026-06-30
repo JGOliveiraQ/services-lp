@@ -806,9 +806,9 @@ pmrem.compileEquirectangularShader();
 scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
 
 /* ── Camera ── */
-const cam = new THREE.PerspectiveCamera(85, innerWidth / innerHeight, 0.05, 500);
-cam.position.set(0, 1, 2);
-cam.lookAt(0, 2, 0);
+const cam = new THREE.PerspectiveCamera(95, innerWidth / innerHeight, 0.001, 500);
+cam.position.set(0, -0.5, 0);
+cam.lookAt(0, 4, 0);
 
 /* ── Lights ── */
 const hemi = new THREE.HemisphereLight(0x223355, 0x200505, 1.5);
@@ -894,15 +894,15 @@ new GLTFLoader().load('./assets/island.glb',
 
 /* ── Camera scroll + mouse ── */
 let scrollY = 0, mouseX = 0, mouseY = 0;
-const camTarget = { x: 0, y: 1, z: 2 };
-const camCurrent = { x: 0, y: 1, z: 2 };
+const camTarget = { x: 0, y: -0.5, z: 0 };
+const camCurrent = { x: 0, y: -0.5, z: 0 };
 
 window.addEventListener('scroll', () => {
   scrollY = window.scrollY;
   const t = scrollY / (document.body.scrollHeight - innerHeight);
-  camTarget.y = 1 + t * 4;
-  camTarget.z = 2 + t * 8;
-  camTarget.x = Math.sin(t * Math.PI * 2) * 3;
+  camTarget.y = -0.5 + t * 6;
+  camTarget.z = 0 + t * 12;
+  camTarget.x = Math.sin(t * Math.PI * 2) * 4;
 });
 
 window.addEventListener('mousemove', e => {
