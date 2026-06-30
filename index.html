@@ -893,21 +893,23 @@ new GLTFLoader().load('./assets/island.glb',
 );
 
 /* ── Camera scroll + mouse ── */
-let scrollY = 0, mouseX = 0, mouseY = 0;
-const camTarget = { x: 0, y: -0.5, z: 0 };
-const camCurrent = { x: 0, y: -0.5, z: 0 };
+/* ── Câmera: órbita horizontal fixa, nunca sobe/desce ── */
+const CAM_HEIGHT = -0.5;  // altura fixa — nunca muda
+const CAM_RADIUS = 0.5;   // raio da órbita dentro da ilha
+
+let orbitAngle = 0;        // ângulo atual em radianos
+let orbitTarget = 0;       // ângulo alvo (suavizado)
+let mouseAngle = 0;        // contribuição do mouse (só horizontal)
 
 window.addEventListener('scroll', () => {
-  scrollY = window.scrollY;
-  const t = scrollY / (document.body.scrollHeight - innerHeight);
-  camTarget.y = -0.5 + t * 6;
-  camTarget.z = 0 + t * 12;
-  camTarget.x = Math.sin(t * Math.PI * 2) * 4;
+  const t = window.scrollY / (document.body.scrollHeight - innerHeight || 1);
+  // scroll gira a câmera em torno da ilha — 3 voltas completas ao longo da página
+  orbitTarget = t * Math.PI * 6;
 });
 
 window.addEventListener('mousemove', e => {
-  mouseX = (e.clientX / innerWidth  - 0.5) * 2;
-  mouseY = (e.clientY / innerHeight - 0.5) * 2;
+  // mouse só influencia o ângulo horizontal, não a altura
+  mouseAngle = (e.clientX / innerWidth - 0.5) * 1.2;
 });
 
 /* ── Animate ── */
@@ -917,20 +919,23 @@ const clock = new THREE.Clock();
   const t = clock.getElapsedTime();
 
   if (island) {
-    island.rotation.y += 0.0008;
-    island.position.y = 0 + Math.sin(t * 0.45) * 0.08;
+    island.rotation.y += 0.0006;
+    island.position.y = Math.sin(t * 0.4) * 0.06; // flutuação suave, pequena
   }
 
   pts.rotation.y += 0.0002;
-  waterMat.color.setHex(0x010205);
+  redFill.intensity = 6 + Math.sin(t * 1.8) * 0.5;
 
-  redFill.intensity = 6 + Math.sin(t * 1.8) * 0.6;
+  // suaviza o ângulo de órbita
+  orbitAngle += (orbitTarget + mouseAngle - orbitAngle) * 0.04;
 
-  camCurrent.x += (camTarget.x + mouseX * 2 - camCurrent.x) * 0.04;
-  camCurrent.y += (camTarget.y + mouseY * 0.6 - camCurrent.y) * 0.04;
-  camCurrent.z += (camTarget.z - camCurrent.z) * 0.04;
-  cam.position.set(camCurrent.x, camCurrent.y, camCurrent.z);
-  cam.lookAt(0, 0, 0);
+  // posição da câmera: círculo horizontal fixo, altura constante
+  const cx = Math.sin(orbitAngle) * CAM_RADIUS;
+  const cz = Math.cos(orbitAngle) * CAM_RADIUS;
+  cam.position.set(cx, CAM_HEIGHT, cz);
+
+  // sempre olha pras estruturas no topo da ilha — nunca muda
+  cam.lookAt(0, 4, 0);
 
   renderer.render(scene, cam);
 })();
