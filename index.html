@@ -1176,17 +1176,9 @@ const WarpShader = {
     uniform float uDistort;
     varying vec2 vUv;
     void main(){
-      float y = vUv.y;
-      float shear = uDistort * (y - 0.5) * 0.07;
-      vec2 uvR = clamp(vUv + vec2(shear + uDistort*0.014, 0.0), 0.0, 1.0);
-      vec2 uvG = clamp(vUv + vec2(shear,                  0.0), 0.0, 1.0);
-      vec2 uvB = clamp(vUv + vec2(shear - uDistort*0.014, 0.0), 0.0, 1.0);
-      gl_FragColor = vec4(
-        texture2D(tDiffuse, uvR).r,
-        texture2D(tDiffuse, uvG).g,
-        texture2D(tDiffuse, uvB).b,
-        1.0
-      );
+      float shear = uDistort * (vUv.y - 0.5) * 0.07;
+      vec2 uv = clamp(vUv + vec2(shear, 0.0), 0.0, 1.0);
+      gl_FragColor = texture2D(tDiffuse, uv);
     }
   `
 };
