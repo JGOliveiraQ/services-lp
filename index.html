@@ -1328,8 +1328,12 @@ window.addEventListener('resize', () => {
 
 /* ── Audio + botão Entrar ── */
 const amb = document.getElementById('amb');
+const sfxCat = new Audio('./assets/muhehehe.mp3');
+sfxCat.volume = 1.0;
 
 document.getElementById('ld-enter')?.addEventListener('click', () => {
+  sfxCat.currentTime = 0;
+  sfxCat.play().catch(() => {});
   loader.classList.add('out');
   setTimeout(() => loader.remove(), 1000);
   amb.play().catch(() => {});
