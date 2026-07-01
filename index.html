@@ -1135,9 +1135,6 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
-import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
-import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
-import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 
 /* ── Renderer ── */
 const canvas = document.getElementById('bg');
@@ -1163,28 +1160,6 @@ scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
 const cam = new THREE.PerspectiveCamera(80, innerWidth / innerHeight, 0.1, 500);
 cam.position.set(0, 2, 2);
 cam.lookAt(0, 1.5, 0);
-
-/* ── Post-processing: warp + chromatic aberration on fast spin ── */
-const composer = new EffectComposer(renderer);
-composer.addPass(new RenderPass(scene, cam));
-
-const WarpShader = {
-  uniforms: { tDiffuse: { value: null }, uDistort: { value: 0.0 } },
-  vertexShader: `varying vec2 vUv; void main(){ vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0); }`,
-  fragmentShader: `
-    uniform sampler2D tDiffuse;
-    uniform float uDistort;
-    varying vec2 vUv;
-    void main(){
-      float shear = uDistort * (vUv.y - 0.5) * 0.07;
-      vec2 uv = clamp(vUv + vec2(shear, 0.0), 0.0, 1.0);
-      gl_FragColor = texture2D(tDiffuse, uv);
-    }
-  `
-};
-const warpPass = new ShaderPass(WarpShader);
-composer.addPass(warpPass);
-let distortAmt = 0;
 
 /* ── Lights ── */
 const hemi = new THREE.HemisphereLight(0x223355, 0x200505, 1.5);
@@ -1344,15 +1319,8 @@ let prevFrame = performance.now();
   redFill.intensity = 6 + Math.sin(t * 1.8) * 0.5;
 
   // suaviza o ângulo de órbita
-  const prevOA = orbitAngle;
   orbitAngle += (orbitTarget + mouseAngle - orbitAngle) * 0.04;
   smoothLookY += (mouseLookY - smoothLookY) * 0.04;
-
-  // warp: mede velocidade angular e alimenta o shader
-  const spinSpeed = Math.abs(orbitAngle - prevOA);
-  const targetDistort = Math.min(spinSpeed * 120, 1.0);
-  distortAmt += (targetDistort - distortAmt) * (targetDistort > distortAmt ? 0.7 : 0.12);
-  warpPass.uniforms.uDistort.value = distortAmt;
 
   // posição da câmera: círculo horizontal fixo, altura constante
   dynamicRadius += ((zoomActive ? ZOOM_RADIUS : BASE_RADIUS) - dynamicRadius) * 0.06;
@@ -1365,7 +1333,7 @@ let prevFrame = performance.now();
   cam.position.set(cx, dynamicHeight, cz);
   cam.lookAt(0, smoothLookY, 0);
 
-  composer.render();
+  renderer.render(scene, cam);
 })();
 
 /* ── Resize ── */
@@ -1373,7 +1341,6 @@ window.addEventListener('resize', () => {
   cam.aspect = innerWidth / innerHeight;
   cam.updateProjectionMatrix();
   renderer.setSize(innerWidth, innerHeight);
-  composer.setSize(innerWidth, innerHeight);
 });
 
 /* ── Audio + botão Entrar ── */
