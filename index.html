@@ -1149,6 +1149,21 @@ renderer.toneMappingExposure = 1.4;
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
+/* ── Scene ── */
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x050508);
+scene.fog = new THREE.FogExp2(0x080810, 0.022);
+
+/* ── Environment map (makes PBR materials visible) ── */
+const pmrem = new THREE.PMREMGenerator(renderer);
+pmrem.compileEquirectangularShader();
+scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+
+/* ── Camera ── */
+const cam = new THREE.PerspectiveCamera(80, innerWidth / innerHeight, 0.1, 500);
+cam.position.set(0, 2, 2);
+cam.lookAt(0, 1.5, 0);
+
 /* ── Post-processing: warp + chromatic aberration on fast spin ── */
 const composer = new EffectComposer(renderer);
 composer.addPass(new RenderPass(scene, cam));
@@ -1178,21 +1193,6 @@ const WarpShader = {
 const warpPass = new ShaderPass(WarpShader);
 composer.addPass(warpPass);
 let distortAmt = 0;
-
-/* ── Scene ── */
-const scene = new THREE.Scene();
-scene.background = new THREE.Color(0x050508);
-scene.fog = new THREE.FogExp2(0x080810, 0.022);
-
-/* ── Environment map (makes PBR materials visible) ── */
-const pmrem = new THREE.PMREMGenerator(renderer);
-pmrem.compileEquirectangularShader();
-scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
-
-/* ── Camera ── */
-const cam = new THREE.PerspectiveCamera(80, innerWidth / innerHeight, 0.1, 500);
-cam.position.set(0, 2, 2);
-cam.lookAt(0, 1.5, 0);
 
 /* ── Lights ── */
 const hemi = new THREE.HemisphereLight(0x223355, 0x200505, 1.5);
