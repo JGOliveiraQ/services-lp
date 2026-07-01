@@ -186,21 +186,6 @@
       position: relative;
     }
 
-    /* gradient for text readability */
-    .hero::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(
-        to bottom,
-        transparent 0%,
-        transparent 35%,
-        rgba(5,5,8,0.55) 65%,
-        rgba(5,5,8,0.92) 100%
-      );
-      pointer-events: none;
-      z-index: 1;
-    }
 
     .hero > * { position: relative; z-index: 2; }
 
